@@ -1,8 +1,7 @@
 import telebot
 import sqlite3
-from datetime import datetime
+from datetime import
 
-# Токен бота от BotFather
 API_TOKEN = '8508567870:AAE2S7I7jPLmN6LNpf6Gropt8vJ4w9udLg'
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -42,13 +41,13 @@ stars_catalog = {
     "3": {"name": "Алмазная звезда", "price": 100, "desc": "Эксклюзив"}
 }
 
-# Стартовая команда
+#кмд
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
     username = message.from_user.username
     
-    # Регистрируем пользователя если его нет
+    # Регистрируем пользователя
     cursor.execute("INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)", (user_id, username))
     conn.commit()
     
@@ -70,7 +69,7 @@ def send_welcome(message):
     
     bot.send_message(message.chat.id, welcome_text)
 
-# Показываем баланс
+#показ баланса
 @bot.message_handler(commands=['mybalance'])
 def show_balance(message):
     user_id = message.from_user.id
@@ -84,7 +83,7 @@ def show_balance(message):
     else:
         bot.send_message(message.chat.id, "❌ Вы не зарегистрированы. Напишите /start")
 
-# Показываем каталог
+#каталог
 @bot.message_handler(commands=['buy'])
 def show_catalog(message):
     catalog_text = "✨ Выберите звезду для покупки:\n\n"
@@ -94,27 +93,27 @@ def show_catalog(message):
     
     bot.send_message(message.chat.id, catalog_text)
 
-# Команды для покупки конкретных звезд
+#Команды для покупки
 @bot.message_handler(commands=['1', '2', '3'])
 def buy_star(message):
     user_id = message.from_user.id
-    star_id = message.text[1:]  # Убираем слеш
+    star_id = message.text[1:] 
     
     if star_id in stars_catalog:
         star = stars_catalog[star_id]
         price = star['price']
         
-        # Проверяем баланс
+        #проверка
         cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
         result = cursor.fetchone()
         
         if result and result[0] >= price:
-            # Списываем Stars и создаем заказ
+            #Списываем Stars
             new_balance = result[0] - price
             cursor.execute("UPDATE users SET balance = ?, total_stars = total_stars + ? WHERE user_id = ?", 
                           (new_balance, 1, user_id))
             
-            # Добавляем заказ
+        
             order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cursor.execute("INSERT INTO orders (user_id, star_name, stars_count, order_date) VALUES (?, ?, ?, ?)",
                           (user_id, star['name'], price, order_date))
@@ -126,7 +125,7 @@ def buy_star(message):
     else:
         bot.send_message(message.chat.id, "❌ Такой звезды нет в каталоге")
 
-# Показать мои покупки
+#мои покупки
 @bot.message_handler(commands=['mystars'])
 def show_my_stars(message):
     user_id = message.from_user.id
@@ -142,14 +141,14 @@ def show_my_stars(message):
     else:
         bot.send_message(message.chat.id, "📭 У вас еще нет покупок")
 
-# Добавить Stars на баланс (для тестирования)
+#Добавить Stars
 @bot.message_handler(commands=['addstars'])
 def add_stars(message):
-    # Это для теста, в реальном боте Stars добавляются через Telegram
+    #тест балик
     user_id = message.from_user.id
     
     try:
-        # Пытаемся получить количество из команды /addstars 100
+        #/addstars 100
         amount = int(message.text.split()[1])
         
         cursor.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (amount, user_id))
